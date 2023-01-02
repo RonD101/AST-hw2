@@ -36,13 +36,22 @@ def Enumerator(constants: dict, variables: dict[str,Type], contexts: list[dict])
                 children = filter(lambda ps: any(nodeHeight(p) == height - 1 for p in ps),
                        itertools.product(previousLevelPrograms,previousLevelPrograms))
             for cs in children:
-                p = f(children=cs,contexts=contexts)
-                if not p: continue
-                currentLevelPrograms.append(p)
                 try:
+                    p = f(children=cs,contexts=contexts)
+                    if not p: continue
+                    alreadyExist = False
+                    for curr in currentLevelPrograms + previousLevelPrograms:
+                        if curr.values == p.values and curr.type == p.type:
+                            alreadyExist = True
+                            break
+                    if alreadyExist:
+                        continue
+                    currentLevelPrograms.append(p)
                     yield p
                 except GeneratorExit:
                     return
+                except ZeroDivisionError:
+                    continue
         arity += 1
         if (arity == 1 or arity > 2):
             arity = 1
